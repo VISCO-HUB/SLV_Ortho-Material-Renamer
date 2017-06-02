@@ -1,7 +1,7 @@
 /*  
 [INFO] 
 
-NAME = Make Preview
+NAME = Ortho Material Renamer
 VERSION = 1.0.0
 AUTHOR = Vasily Lukyanenko
 DEV = VISCO
