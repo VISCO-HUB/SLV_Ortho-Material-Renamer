@@ -2,7 +2,7 @@
 [INFO] 
 
 NAME = Ortho Material Renamer
-VERSION = 1.0.0
+VERSION = 1.0.1
 AUTHOR = Vasily Lukyanenko
 DEV = VISCO
 HELP = 
@@ -16,6 +16,10 @@ ICON=#("PhysX_Main", 4)
 [1.0.0]
 
 * First release =
+
+[1.0.1]
+
++ Added: Custom Extension option=
 
 [ABOUT]
 Material and texture renamer/relinker to provide automatic import of orthos into UE4=
@@ -69,12 +73,14 @@ fn showPreview =
 	)
 	
 	meshSample[1] = s[1].name
-	meshSample[2] 
+	meshSample[2]  = undefined
+	meshSample[3]  = undefined
 	
 	if(s[1].material != undefined and classOf s[1].material.diffuseMap == BitmapTex) do
 	(
 		d = s[1].material.diffuseMap.filename
 		meshSample[2]  = getFilenamePath d
+		meshSample[3]  = getFilenameType  d
 	)
 	
 	_rOrthoMaterialRenamer.showSamplePreview()
@@ -83,16 +89,23 @@ fn showPreview =
 
 rollout _rOrthoMaterialRenamer  "Renamer Parameters" category:1
 (	
-	label lbl1 "Delete prefix from mesh name:" align: #left
-	edittext edtMeshDelPrefix "" align: #left
+	group "Settings"
+	(
+		label lbl1 "Delete prefix from mesh name:" align: #left
+		edittext edtMeshDelPrefix "" align: #left
+		
+		label lbl2 "New Material prefix:" align: #left
+		edittext edtMatPrefix "" align: #left
+		
+		label lbl3 "New Texture prefix and postfix:" align: #left
+		edittext edtTexPrefix "" align: #left across: 2
+		edittext edtTexPostfix "" align: #left
+		checkbox cbxCustomExt "Extension:" across: 2 offset: [0, 4]
+		dropdownlist ddlCustomExt "" items: #(".jpg", ".png", ".bmp", ".dds", ".tga", ".tif") enabled: false	
+	)		
 	
-	label lbl2 "New Material prefix:" align: #left
-	edittext edtMatPrefix "" align: #left
+	label lblDummy1 ""
 	
-	label lbl3 "New Texture prefix and postfix:" align: #left
-	edittext edtTexPrefix "" align: #left across: 2
-	edittext edtTexPostfix "" align: #left
-			
 	group "Preview Mesh Name"
 	(
 		label lblPreviewMesh "Select Objects"
@@ -120,7 +133,10 @@ rollout _rOrthoMaterialRenamer  "Renamer Parameters" category:1
 		
 		if(meshSample[2] != undefined) do
 		(
-			lblPreviewTex.caption = edtTexPrefix.text + n + edtTexPostfix.text
+			ext = meshSample[3]
+			if(cbxCustomExt.checked) do ext = ddlCustomExt.selected
+			
+			lblPreviewTex.caption = edtTexPrefix.text + n + edtTexPostfix.text + ext
 		)		
 	)
 	
@@ -129,6 +145,13 @@ rollout _rOrthoMaterialRenamer  "Renamer Parameters" category:1
 	on edtMeshDelPrefix changed v do showSamplePreview()
 	on edtTexPrefix changed v do showSamplePreview()
 	on edtTexPostfix changed v do showSamplePreview()
+	on ddlCustomExt selected v do showSamplePreview()
+	on cbxCustomExt changed v do 
+	(	
+		ddlCustomExt.enabled = v
+		showSamplePreview()
+	)
+	
 		
 	on _rOrthoMaterialRenamer close do
 	(
@@ -162,6 +185,8 @@ rollout _rOrthoMaterialRenamer  "Renamer Parameters" category:1
 			
 			texName = getFilenamePath d
 			texExt = getFilenameType d
+			if(cbxCustomExt.checked) do texExt = ddlCustomExt.selected
+			
 			texPath = getFilenamePath d
 			
 			newFileName = texPath + texPrefix + n + texPostfix + texExt
